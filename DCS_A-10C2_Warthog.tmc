@@ -30,8 +30,8 @@ int coolie_up;
 int coolie_down;
 int coolie_right;
 int coolie_left;
-int chinahat_fwd;
-int chinahat_back;
+//int chinahat_fwd;
+//int chinahat_back;
 int ltb_short;
 int flaps_up;
 int flaps_down;
@@ -90,13 +90,13 @@ int main()
 	coolie_down			= END;																					// DMS down
 	coolie_right		= PGDN; 																				// DMS right
 	coolie_left			= DEL;																					// DMS left
-	ltb_short			= 'q'																					// Left Throttle Button
+	ltb_short			= 'q';																					// Left Throttle Button
 	flaps_up			= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'f', D(), UP+L_SHIFT );								// Flaps Up (3 steps: down, manoeuvre, up)
 	flaps_down			= CHAIN( DOWN+L_CTL, D(10), PULSE+'f', D(), UP+L_CTL );									// Flaps Down
 
 	// DX bindings
-	chinahat_fwd		= DX13;																					// In Common this is bound to radar elevation
-	chinahat_back		= DX14;																					// In Common this is bound to radar elevation
+	//chinahat_fwd		= DX13;		- already defined in Common													// In Common this is bound to radar elevation
+	//chinahat_back		= DX14;																					// In Common this is bound to radar elevation
 
 
 	// Start-up Sequence (overwrites common)
@@ -105,7 +105,8 @@ int main()
 				   CHAIN( DOWN+R_CTL, D(10), PULSE+'s', D(), UP+R_CTL )); 										// APU generator power
 
 	// Gound Crew (overwrites common)
-	groundcrew = ground_wheelchocks_remove;																		// Radio menu (\), Prev, GroundCrew, Wheel Chocks, Remove
+	ground_wheelchocks_remove	= CHAIN( PULSE+USB[0x31], D(200), PULSE+F11, D(200), PULSE+F8, D(200), PULSE+F5, D(200), PULSE+F2 );		// Radio menu (\), Prev, Ground crew, Wheel Chocks, Remove
+	groundcrew 					= ground_wheelchocks_remove;																				// Radio menu (\), Prev, GroundCrew, Wheel Chocks, Remove
 
 	// Master Modes function
 	mastermode = 0;																								// mastermode 0,1,2,3		NAV, GUN, CCIP, CCRP
@@ -133,18 +134,18 @@ dan wel even naar A2G switchen om op nav mode te zetten...
 	extlight_full 		= CHAIN( DOWN+L_CTL, D(10), PULSE+'p', D(), UP+L_CTL, D(100),									// Exterior Light per Lighting Panel (pinky switch aft)
 						   		 DOWN+L_SHIFT+L_CTL, D(10), PULSE+'l', D(), UP+L_SHIFT+L_CTL, D(100),					// Anti-Collision Lights - ON
 						   		 DOWN+L_ALT+L_CTL, D(10), PULSE+'m', D(), UP+L_ALT+L_CTL, D(100),						// Position Lights Steady
-						   		 LED(&Throttle, LED_ONOFF, LED_CURRENT+LED4), D(),	 									// LED4 ON
+						   		 throttle_led4_on, D(),	 																// LED4 ON
 						   		 DOWN+L_ALT+L_CTL, D(10), DOWN+'l', D(800), UP+'l', D(), UP+L_ALT+L_CTL );				// Formation Lights Decrease
 	extlight_position 	= CHAIN( DOWN+L_ALT, D(10), PULSE+'p', D(), UP+L_ALT, D(100),									// position lights to dimsteady / strobes off (pinky switch fwd)
 							     DOWN+L_ALT+L_CTL, D(10), PULSE+'m', D(), UP+L_ALT+L_CTL, D(),							// Position Lights Steady
-							     LED(&Throttle, LED_ONOFF, LED_CURRENT+LED4), D(), 										// LED4 ON
+							     throttle_led4_on, D(), 																// LED4 ON
 							     DOWN+L_ALT+L_CTL, D(10), DOWN+'l', D(800), UP+'l', D(), UP+L_ALT+L_CTL );				// Formation Lights Decrease
 	extlight_formation 	= CHAIN( DOWN+L_CTL, D(10), PULSE+'p', D(), UP+L_CTL, D(100),									// Exterior Light per Lighting Panel (pinky switch aft)
 								 DOWN+L_ALT+L_CTL, D(10), PULSE+'k', D(), UP+L_ALT+L_CTL, D(100), 						// Position Lights Off
 								 DOWN+L_ALT+L_SHIFT, D(10), DOWN+'l', D(400), UP+'l', D(), UP+L_ALT+L_SHIFT, D(100),	// Formation Lights Increase
-								 LED(&Throttle, LED_ONOFF, LED_CURRENT+LED4) );	 										// LED4 ON
+								 throttle_led4_on );	 																// LED4 ON
 	extlight_covert 	= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'p', D(), UP+L_SHIFT, D(), 									// All Covert (pinky switch centre)
-							 	 LED(&Throttle, LED_ONOFF, LED_CURRENT-LED4) ); 										// LED4 OFF	
+							 	 throttle_led4_off ); 																	// LED4 OFF	
 
 
 	// Speedbrake functions (overwrites common)
@@ -276,15 +277,6 @@ dan wel even naar A2G switchen om op nav mode te zetten...
 	MapKeyIO(&Throttle, CSL, 		0,							 													// I - 
 									coolie_left );																	// O - DMS left
 
-/* TO COMMON -- TEST						
-	// China Hat			// TODO to common, use DX13 and DX14
-	// CHF
-	MapKeyIO(&Throttle, CHF, 	brightness_up, 																	// I - brightness up for goggle/HMCS
-							 	'v' );																			// O - China Hat Fwd
-	// CHB
-	MapKeyIO(&Throttle, CHB, 	brightness_down,																// I - brightness down for goggle/HMCS
-							 	'c' );																			// O - China Hat Aft
-*/
 
 	// Left Throttle Button (overwrite of common)
 	MapKeyIO(&Throttle, LTB, 		eject, 																			// I - EJECT

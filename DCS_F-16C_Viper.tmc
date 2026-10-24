@@ -44,8 +44,17 @@ int icp_priobutton_0;
 int icp_priobutton_7;
 int fuelqtysel_cw;
 int fuelqtysel_norm;
+int mainpwr_pwr;
+int mainpwr_batt;
+int jfsswitch_start1;
 int jfsswitch_start2;
 
+int ap_roll_atthold;
+int ap_roll_hdgsel;
+int ap_roll_strgsel;
+int ap_pitch_althold;
+int ap_pitch_atthold;
+int ap_pitch_apoff;
 int autopilot_ALThold;	
 int autopilot_ATThold;
 int autopilot_off;
@@ -131,22 +140,26 @@ int main()
 	icp_priobutton_7	= CHAIN( L_CTL, D(10), KP7 );															// ICP Priority Function Button - 7 (MARK)
 	fuelqtysel_cw		= CHAIN( DOWN+R_CTL+R_SHIFT, D(10), PULSE+'v', D(), UP+R_CTL+R_SHIFT );					// FUEL QTY SEL Knob - CW
 	fuelqtysel_norm		= CHAIN( DOWN+R_CTL+R_SHIFT, D(10), PULSE+'c', D(), UP+R_CTL+R_SHIFT ); 				// FUEL QTY SEL Knob - NORM
+	mainpwr_pwr			= CHAIN( DOWN+R_SHIFT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+R_SHIFT );				// MAIN PWR Switch - MAIN PWR
+	mainpwr_batt		= CHAIN( DOWN+L_ALT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+L_ALT );					// MAIN PWR Switch - BATT
+	jfsswitch_start1	= CHAIN( DOWN+R_CTL, D(10), DOWN+'s', D(100), UP+'s', D(), UP+R_CTL );					// JFS Switch - START 1
 	jfsswitch_start2	= CHAIN( DOWN+L_SHIFT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+L_SHIFT );				// JFS Switch - START 2
+	ap_roll_hdgsel		= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'a', D(), UP+L_SHIFT ); 							// Autopilot ROLL Switch - HDG SEL
+	ap_roll_atthold		= CHAIN( DOWN+L_CTL, D(10), PULSE+'a', D(), UP+L_CTL );									// Autopilot ROLL Switch - ATT HOLD
+	ap_roll_strgsel		= CHAIN( DOWN+L_ALT, D(10), PULSE+'a', D(), UP+L_ALT );									// Autopilot ROLL Switch - STRG SEL
+	ap_pitch_althold	= CHAIN( DOWN+L_CTL+L_SHIFT, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL+L_SHIFT );	// Autopilot PITCH Switch - ALT HOLD
+	ap_pitch_atthold	= CHAIN( DOWN+L_CTL+L_ALT, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL+L_ALT );		// Autopilot PITCH Switch - ATT HOLD
+	ap_pitch_apoff		= CHAIN( DOWN+L_CTL, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL ); 					// Autopilot PITCH Switch - A/P OFF
 
 
 	// Start-up Sequence (overwrites common)
-	startup 			= SEQ( CHAIN( L_ALT, D(10), 's' ), 														// MAIN PWR Switch - BATT
-				   			   CHAIN( R_SHIFT, D(10), 's' ), 													// MAIN PWR Switch - MAIN PWR
-				   			   CHAIN( R_CTL, D(10), 's' )); 													// JFS Switch - START 1
+	startup 			= SEQ( mainpwr_batt, mainpwr_pwr, jfsswitch_start1 );									// MAIN PWR Switch - BATT; MAIN PWR Switch - MAIN PWR; JFS Switch - START 1
 
 
 	// Autopilot function
-	autopilot_ALThold 	= CHAIN( DOWN+L_CTL+L_SHIFT, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL+L_SHIFT,	// Autopilot PITCH Switch - ALT HOLD  (extra 100ms needed by DCS)
-							     EXEC( "autopilot_mode = 1;" ));
-	autopilot_ATThold 	= CHAIN( DOWN+L_CTL+L_ALT, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL+L_ALT,		// Autopilot PITCH Switch - ATT HOLD  (extra 100ms needed by DCS)
-							   	 EXEC( "autopilot_mode = 1;" ));
-	autopilot_off 		= CHAIN( DOWN+L_CTL, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL, 					// Autopilot PITCH Switch - A/P OFF   (extra 100ms needed by DCS)
-						   		 EXEC( "autopilot_mode = 0;" ));
+	autopilot_ALThold 	= CHAIN( ap_pitch_althold, EXEC( "autopilot_mode = 1;" ));								// Autopilot PITCH Switch - ALT HOLD
+	autopilot_ATThold 	= CHAIN( ap_pitch_atthold, EXEC( "autopilot_mode = 1;" ));								// Autopilot PITCH Switch - ATT HOLD
+	autopilot_off 		= CHAIN( ap_pitch_apoff, EXEC( "autopilot_mode = 0;" ));								// Autopilot PITCH Switch - A/P OFF
 	
 	autopilot 			= EXEC( "if(!autopilot_mode) ActKey( PULSE+KEYON+autopilot_ALThold );"
 					  			"if(autopilot_mode) ActKey( PULSE+KEYON+autopilot_off );"	);
@@ -192,18 +205,6 @@ int main()
 
 	// ---------------------- FLIGHT STICK --------------------------
 
-	// --DCS_Fighter_Common---------
-	// TG - Camera/Gun Trigger
-	// S1 - Nosewheel Steering Button
-	// S2 - Weapon Release Button
-	// H1 - Trim Switch
-	// H2 - Target Management Switch
-	// H3 - Display Management Switch
-	// JOYX
-	// JOYY
-	// -----------------------------	
-
-
 	// Nosewheel Steering Button
 	// S1
 	MapKeyIOUMD(&AVA_F16, S1, 	F10map_toggle,																	// IU - F10 map
@@ -243,30 +244,6 @@ int main()
  
 	// ------------------------ THROTTLE ----------------------------
 
-	// --DCS_Fighter_Common---------
-	// Left Throttle Button
-	// SPDF/B
-	// CHF/B
-	// MSU/D/P
-	// PSF/B
-	// EACON/OFF Landing Gear
-	// EOLIGN/OVER
-	// EORIGN/OVER
-	// EFLNORM/OVER
-	// EFRNORM/OVER
-	// SC
-	// APUON/OFF
-	// RDRNRM/DIS Canopy
-	// IDLELON/IDLERON
-	// THR_LEFT
-	// THR_RIGHT
-	// THR_FC
-	// SCX
-	// SCY
-	// -----------------------------
-
-
-
 	// Autopilot
 	// APENG	
 	MapKeyIO(&Throttle, APENG, 	autopilot_ATThold,																// I - Autopilot ATT on (Autopilot PITCH Switch - ATT HOLD)
@@ -274,11 +251,11 @@ int main()
 	// APDIS
 	MapKey(&Throttle, APDIS, 	0 ); 																			// 
 	// APPAT
-	MapKey(&Throttle, APPAT, 	CHAIN( DOWN+L_SHIFT, D(10), PULSE+'a', D(), UP+L_SHIFT )); 						// Autopilot ROLL Switch - HDG SEL
+	MapKey(&Throttle, APPAT, 	ap_roll_hdgsel ); 																// Autopilot ROLL Switch - HDG SEL
 	// APAH
-	MapKey(&Throttle, APAH, 	CHAIN( DOWN+L_CTL, D(10), PULSE+'a', D(), UP+L_CTL ));							// Autopilot ROLL Switch - ATT HOLD
+	MapKey(&Throttle, APAH, 	ap_roll_atthold );																// Autopilot ROLL Switch - ATT HOLD
 	// APALT
-	MapKey(&Throttle, APALT, 	CHAIN( DOWN+L_ALT, D(10), PULSE+'a', D(), UP+L_ALT ));							// Autopilot ROLL Switch - STRG SEL
+	MapKey(&Throttle, APALT, 	ap_roll_strgsel );																// Autopilot ROLL Switch - STRG SEL
 
 	
 

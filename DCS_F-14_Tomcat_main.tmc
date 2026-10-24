@@ -224,7 +224,7 @@ int main()
 							  ground_wheelchocks_remove ));																			// Radio menu (\), Ground crew, Wheel Chocks, Remove
 
 							  
-	// DTC editor
+	// DTC editor (overwrite of Common)
 	ground_dtceditor	= SEQ( CHAIN( PULSE+USB[0x31], D(200), PULSE+F11, D(200), PULSE+F8, D(200), PULSE+F10, D(200), PULSE+F1 ), 	// Radio menu (\), Prev menu, Ground crew, DTC interface, Show
 							   CHAIN( PULSE+USB[0x31], D(200), PULSE+F8, D(200), PULSE+F10, D(200), PULSE+F2 ));					// Radio menu (\), Ground crew, DTC interface, Hide
 
