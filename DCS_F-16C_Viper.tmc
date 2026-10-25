@@ -48,6 +48,15 @@ int mainpwr_pwr;
 int mainpwr_batt;
 int jfsswitch_start1;
 int jfsswitch_start2;
+int extlight_master_norm;
+int extlight_master_accov;
+int extlight_master_allcov;
+int extlight_wingtail_brt;
+int extlight_wingtail_off;
+int extlight_fuselage_brt;
+int extlight_fuselage_off;
+int brake_parking;
+int brake_antiskid;
 
 int ap_roll_atthold;
 int ap_roll_hdgsel;
@@ -61,7 +70,7 @@ int autopilot_off;
 int autopilot;
 char autopilot_mode = 0;
 
-int parkingbrake;
+int parkingbrake_toggle;
 
 int override_dogfight;	
 char override_dog = 0;		
@@ -83,7 +92,7 @@ int main()
 	dcs_fighter_common_functions();						// load dcs COMMON functions
 
 
-	// -------------------- AIRCRAFT FUNCTIONS ----------------------
+	// ------------------- AIRCRAFT KEYBINDINGS ---------------------
 
 	// Target Management Switch / Armament Selector (overwrites common)
 	TMS_fwd 	= CHAIN( R_CTL, D(10), UARROW );																// TMS fwd
@@ -108,48 +117,62 @@ int main()
 	CMS_left 	= CHAIN( DOWN+R_SHIFT, D(10), PULSE+',', D(), UP+R_SHIFT ); 									// Countermeasures Management Switch - Left
 
 	// DX - A/C specific
-	enable 				= DX24;																					// ENABLE Switch - Depress
-	antennaelev_up		= chinahat_fwd; 																		// Antenna elevation up (DX13)
-	antennaelev_down	= chinahat_back; 																		// Antenna elevation down (DX14)
+	enable 					= DX24;																					// ENABLE Switch - Depress
+	antennaelev_up			= chinahat_fwd; 																		// Antenna elevation up (DX13)
+	antennaelev_down		= chinahat_back; 																		// Antenna elevation down (DX14)
 
 	// Keybindings
-	mastermode_a2a		= PULSE+'1';
-	mastermode_a2g		= PULSE+'2';
-	masterarm_arm		= CHAIN( DOWN+R_SHIFT, D(10), PULSE+'a', D(), UP+R_SHIFT );								// MASTER ARM Switch - MASTER ARM
-	masterarm_sim		= CHAIN( DOWN+R_SHIFT+R_CTL, D(10), PULSE+'a', D(), UP+R_SHIFT+R_CTL );					// MASTER ARM Switch - SIMULATE
-	masterarm_off		= CHAIN( DOWN+R_CTL, D(10), PULSE+'a', D(), UP+R_CTL );									// MASTER ARM Switch - OFF
-	canopyhandle_toggle	= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'c', D(), UP+L_SHIFT );								// Canopy Handle - DOWN/UP
-	ecmxmit_up			= CHAIN( DOWN+L_SHIFT+L_CTL, D(10), PULSE+'f', D(), UP+L_SHIFT+L_CTL );					// ECM XMIT Switch - Up
-	ecmxmit_down		= CHAIN( DOWN+L_SHIFT+L_CTL, D(10), PULSE+'v', D(), UP+L_SHIFT+L_CTL );					// ECM XMIT Switch - Down
-	cmprogram_cw		= CHAIN( DOWN+L_CTL, D(10), PULSE+'f', D(), UP+L_CTL ); 								// PROGRAM Knob - CW
-	cmprogram_ccw		= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'f', D(), UP+L_SHIFT ); 							// PROGRAM Knob - CCW
-	rfswitch_norm		= PULSE+'r';																			// RF Switch - NORM
-	rfswitch_quiet		= CHAIN( DOWN+L_CTL, D(10), PULSE+'r', D(), UP+L_CTL );									// RF Switch - QUIET
-	rfswitch_silent		= CHAIN( DOWN+R_CTL, D(10), PULSE+'r', D(), UP+R_CTL );									// RF Switch - SILENT
-	gndjettison_enable	= CHAIN( DOWN+R_SHIFT, D(10), PULSE+'e', D(), UP+R_SHIFT );								// GND JETT ENABLE Switch - ENABLE
-	gndjettison_off		= CHAIN( DOWN+R_CTL, D(10), PULSE+'e', D(), UP+R_CTL );									// GND JETT ENABLE Switch - OFF
-	overrideswitch_cent	= CHAIN( DOWN+L_CTL, D(10), PULSE+'0', D(), UP+L_CTL );									// DOGFIGHT/Missile Override Switch - CENTER
-	overrideswitch_dog	= CHAIN( DOWN+L_CTL, D(10), PULSE+'3', D(), UP+L_CTL );									// DOGFIGHT/Missile Override Switch - DOGFIGHT
-	overrideswitch_msl	= CHAIN( DOWN+L_CTL, D(10), PULSE+'4', D(), UP+L_CTL );									// DOGFIGHT/Missile Override Switch - MISSILE OVERRIDE
-	mfd_right_osb06		= CHAIN( DOWN+L_ALT+R_SHIFT, D(10), PULSE+'6', D(), UP+L_ALT+R_SHIFT );					// Switch AG weapon type (SMS page Right MFD OSB 6)
-	icp_dedrocker_incr	= CHAIN( DOWN+L_CTL, D(10), PULSE+USB[0x57], D(), UP+L_CTL );							// ICP DED Increment/Decrement Switch - Increment   (L_CTL+NUM+)
-	icp_dedrocker_decr	= CHAIN( DOWN+L_CTL, D(10), PULSE+USB[0x56], D(), UP+L_CTL );							// ICP DED Increment/Decrement Switch - Decrement   (L_CTL+NUM-)
-	icp_dobber_seq		= CHAIN( L_CTL, D(10), RARROW ); 														// ICP Data Control Switch - SEQ (dobber sequence)
-	icp_dobber_ret		= CHAIN( L_CTL, D(10), LARROW ); 														// ICP Data Control Switch - RET (dobber return)
-	icp_priobutton_0	= CHAIN( L_CTL, D(10), KP0 );															// ICP Priority Function Button - 0 (M-SEL)
-	icp_priobutton_7	= CHAIN( L_CTL, D(10), KP7 );															// ICP Priority Function Button - 7 (MARK)
-	fuelqtysel_cw		= CHAIN( DOWN+R_CTL+R_SHIFT, D(10), PULSE+'v', D(), UP+R_CTL+R_SHIFT );					// FUEL QTY SEL Knob - CW
-	fuelqtysel_norm		= CHAIN( DOWN+R_CTL+R_SHIFT, D(10), PULSE+'c', D(), UP+R_CTL+R_SHIFT ); 				// FUEL QTY SEL Knob - NORM
-	mainpwr_pwr			= CHAIN( DOWN+R_SHIFT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+R_SHIFT );				// MAIN PWR Switch - MAIN PWR
-	mainpwr_batt		= CHAIN( DOWN+L_ALT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+L_ALT );					// MAIN PWR Switch - BATT
-	jfsswitch_start1	= CHAIN( DOWN+R_CTL, D(10), DOWN+'s', D(100), UP+'s', D(), UP+R_CTL );					// JFS Switch - START 1
-	jfsswitch_start2	= CHAIN( DOWN+L_SHIFT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+L_SHIFT );				// JFS Switch - START 2
-	ap_roll_hdgsel		= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'a', D(), UP+L_SHIFT ); 							// Autopilot ROLL Switch - HDG SEL
-	ap_roll_atthold		= CHAIN( DOWN+L_CTL, D(10), PULSE+'a', D(), UP+L_CTL );									// Autopilot ROLL Switch - ATT HOLD
-	ap_roll_strgsel		= CHAIN( DOWN+L_ALT, D(10), PULSE+'a', D(), UP+L_ALT );									// Autopilot ROLL Switch - STRG SEL
-	ap_pitch_althold	= CHAIN( DOWN+L_CTL+L_SHIFT, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL+L_SHIFT );	// Autopilot PITCH Switch - ALT HOLD
-	ap_pitch_atthold	= CHAIN( DOWN+L_CTL+L_ALT, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL+L_ALT );		// Autopilot PITCH Switch - ATT HOLD
-	ap_pitch_apoff		= CHAIN( DOWN+L_CTL, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL ); 					// Autopilot PITCH Switch - A/P OFF
+	mastermode_a2a			= PULSE+'1';
+	mastermode_a2g			= PULSE+'2';
+	masterarm_arm			= CHAIN( DOWN+R_SHIFT, D(10), PULSE+'a', D(), UP+R_SHIFT );								// MASTER ARM Switch - MASTER ARM
+	masterarm_sim			= CHAIN( DOWN+R_SHIFT+R_CTL, D(10), PULSE+'a', D(), UP+R_SHIFT+R_CTL );					// MASTER ARM Switch - SIMULATE
+	masterarm_off			= CHAIN( DOWN+R_CTL, D(10), PULSE+'a', D(), UP+R_CTL );									// MASTER ARM Switch - OFF
+	canopyhandle_toggle		= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'c', D(), UP+L_SHIFT );								// Canopy Handle - DOWN/UP
+	ecmxmit_up				= CHAIN( DOWN+L_SHIFT+L_CTL, D(10), PULSE+'f', D(), UP+L_SHIFT+L_CTL );					// ECM XMIT Switch - Up
+	ecmxmit_down			= CHAIN( DOWN+L_SHIFT+L_CTL, D(10), PULSE+'v', D(), UP+L_SHIFT+L_CTL );					// ECM XMIT Switch - Down
+	cmprogram_cw			= CHAIN( DOWN+L_CTL, D(10), PULSE+'f', D(), UP+L_CTL ); 								// PROGRAM Knob - CW
+	cmprogram_ccw			= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'f', D(), UP+L_SHIFT ); 							// PROGRAM Knob - CCW
+	rfswitch_norm			= PULSE+'r';																			// RF Switch - NORM
+	rfswitch_quiet			= CHAIN( DOWN+L_CTL, D(10), PULSE+'r', D(), UP+L_CTL );									// RF Switch - QUIET
+	rfswitch_silent			= CHAIN( DOWN+R_CTL, D(10), PULSE+'r', D(), UP+R_CTL );									// RF Switch - SILENT
+	gndjettison_enable		= CHAIN( DOWN+R_SHIFT, D(10), PULSE+'e', D(), UP+R_SHIFT );								// GND JETT ENABLE Switch - ENABLE
+	gndjettison_off			= CHAIN( DOWN+R_CTL, D(10), PULSE+'e', D(), UP+R_CTL );									// GND JETT ENABLE Switch - OFF
+	overrideswitch_cent		= CHAIN( DOWN+L_CTL, D(10), PULSE+'0', D(), UP+L_CTL );									// DOGFIGHT/Missile Override Switch - CENTER
+	overrideswitch_dog		= CHAIN( DOWN+L_CTL, D(10), PULSE+'3', D(), UP+L_CTL );									// DOGFIGHT/Missile Override Switch - DOGFIGHT
+	overrideswitch_msl		= CHAIN( DOWN+L_CTL, D(10), PULSE+'4', D(), UP+L_CTL );									// DOGFIGHT/Missile Override Switch - MISSILE OVERRIDE
+	mfd_right_osb06			= CHAIN( DOWN+L_ALT+R_SHIFT, D(10), PULSE+'6', D(), UP+L_ALT+R_SHIFT );					// Switch AG weapon type (SMS page Right MFD OSB 6)
+	icp_dedrocker_incr		= CHAIN( DOWN+L_CTL, D(10), PULSE+USB[0x57], D(), UP+L_CTL );							// ICP DED Increment/Decrement Switch - Increment   (L_CTL+NUM+)
+	icp_dedrocker_decr		= CHAIN( DOWN+L_CTL, D(10), PULSE+USB[0x56], D(), UP+L_CTL );							// ICP DED Increment/Decrement Switch - Decrement   (L_CTL+NUM-)
+	icp_dobber_seq			= CHAIN( L_CTL, D(10), RARROW ); 														// ICP Data Control Switch - SEQ (dobber sequence)
+	icp_dobber_ret			= CHAIN( L_CTL, D(10), LARROW ); 														// ICP Data Control Switch - RET (dobber return)
+	icp_priobutton_0		= CHAIN( L_CTL, D(10), KP0 );															// ICP Priority Function Button - 0 (M-SEL)
+	icp_priobutton_7		= CHAIN( L_CTL, D(10), KP7 );															// ICP Priority Function Button - 7 (MARK)
+	fuelqtysel_cw			= CHAIN( DOWN+R_CTL+R_SHIFT, D(10), PULSE+'v', D(), UP+R_CTL+R_SHIFT );					// FUEL QTY SEL Knob - CW
+	fuelqtysel_norm			= CHAIN( DOWN+R_CTL+R_SHIFT, D(10), PULSE+'c', D(), UP+R_CTL+R_SHIFT ); 				// FUEL QTY SEL Knob - NORM
+	mainpwr_pwr				= CHAIN( DOWN+R_SHIFT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+R_SHIFT );				// MAIN PWR Switch - MAIN PWR
+	mainpwr_batt			= CHAIN( DOWN+L_ALT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+L_ALT );					// MAIN PWR Switch - BATT
+	jfsswitch_start1		= CHAIN( DOWN+R_CTL, D(10), DOWN+'s', D(100), UP+'s', D(), UP+R_CTL );					// JFS Switch - START 1
+	jfsswitch_start2		= CHAIN( DOWN+L_SHIFT, D(10), DOWN+'s', D(100), UP+'s', D(), UP+L_SHIFT );				// JFS Switch - START 2
+	ap_roll_hdgsel			= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'a', D(), UP+L_SHIFT ); 							// Autopilot ROLL Switch - HDG SEL
+	ap_roll_atthold			= CHAIN( DOWN+L_CTL, D(10), PULSE+'a', D(), UP+L_CTL );									// Autopilot ROLL Switch - ATT HOLD
+	ap_roll_strgsel			= CHAIN( DOWN+L_ALT, D(10), PULSE+'a', D(), UP+L_ALT );									// Autopilot ROLL Switch - STRG SEL
+	ap_pitch_althold		= CHAIN( DOWN+L_CTL+L_SHIFT, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL+L_SHIFT );	// Autopilot PITCH Switch - ALT HOLD
+	ap_pitch_atthold		= CHAIN( DOWN+L_CTL+L_ALT, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL+L_ALT );		// Autopilot PITCH Switch - ATT HOLD
+	ap_pitch_apoff			= CHAIN( DOWN+L_CTL, D(10), DOWN+'p', D(100), UP+'p', D(), UP+L_CTL ); 					// Autopilot PITCH Switch - A/P OFF
+	extlight_master_norm	= CHAIN( DOWN+R_SHIFT, D(10), PULSE+'l', D(), UP+R_SHIFT );								// MASTER Switch - NORM
+	extlight_master_accov	= CHAIN( DOWN+R_CTL, D(10), PULSE+'l', D(), UP+R_CTL );									// MASTER Switch - A-C covert
+	extlight_master_allcov 	= CHAIN( DOWN+L_CTL, D(10), PULSE+'l', D(), UP+L_CTL );									// MASTER Switch - ALL covert
+	extlight_wingtail_brt	= CHAIN( DOWN+R_SHIFT+L_SHIFT, D(10), PULSE+'l', D(), UP+R_SHIFT+L_SHIFT );				// WING/TAIL Switch - BRT
+	extlight_wingtail_off	= CHAIN( DOWN+R_SHIFT+L_CTL, D(10), PULSE+'l', D(), UP+R_SHIFT+L_CTL );					// WING/TAIL Switch - OFF
+	extlight_fuselage_brt	= CHAIN( DOWN+R_CTL+L_SHIFT, D(10), PULSE+'l', D(), UP+R_CTL+L_SHIFT );					// FUSELAGE Switch - BRT
+	extlight_fuselage_off	= CHAIN( DOWN+R_CTL+L_CTL, D(10), PULSE+'l', D(), UP+R_CTL+L_CTL );						// FUSELAGE Switch - OFF
+	extlight_flashsteady	= CHAIN( DOWN+R_ALT, D(10), PULSE+'l', D(), UP+R_ALT );									// FLASH STEADY Switch - FLASH/STEADY
+	brake_parking			= CHAIN( DOWN+R_CTL, D(10), PULSE+'p', D(), UP+R_CTL );									// ANTI-SKID Switch - PARKING BRAKE
+	brake_antiskid			= CHAIN( DOWN+R_CTL+R_SHIFT, D(10), PULSE+'p', D(), UP+R_CTL+R_SHIFT );					// ANTI-SKID Switch - ANTI-SKID
+
+
+
+	// -------------------- AIRCRAFT FUNCTIONS ----------------------
 
 
 	// Start-up Sequence (overwrites common)
@@ -166,20 +189,13 @@ int main()
 
 
 	// External Lights
-	extlight_full		= CHAIN( DOWN+R_SHIFT, D(10), PULSE+'l', D(), UP+R_SHIFT, D(100), 						// MASTER Switch - NORM
-								 DOWN+R_SHIFT+L_SHIFT, D(10), PULSE+'l', D(), UP+R_SHIFT+L_SHIFT, D(100),		// WING/TAIL Switch - BRT
-								 DOWN+R_CTL+L_SHIFT, D(10), PULSE+'l', D(), UP+R_CTL+L_SHIFT, D(),				// FUSELAGE Switch - BRT
-								 LED(&Throttle, LED_ONOFF, LED_CURRENT+LED4) );									// LED4 ON
-	extlight_position	= CHAIN( DOWN+R_CTL, D(10), PULSE+'l', D(), UP+R_CTL, D(100),							// MASTER Switch - A-C covert
-								 DOWN+R_SHIFT+L_SHIFT, D(10), PULSE+'l', D(), UP+R_SHIFT+L_SHIFT, D(100),		// WING/TAIL Switch - BRT
-								 DOWN+R_CTL+L_CTL, D(10), PULSE+'l', D(), UP+R_CTL+L_CTL, D(),					// FUSELAGE Switch - OFF
-								 LED(&Throttle, LED_ONOFF, LED_CURRENT+LED4) );									// LED4 ON
+	extlight_full		= CHAIN( extlight_master_norm, D(100), extlight_wingtail_brt, D(100),					// MASTER Switch - NORM; WING/TAIL Switch - BRT
+								 extlight_fuselage_brt, D(), throttle_led4_on );								// FUSELAGE Switch - BRT; LED4 ON
+	extlight_position	= CHAIN( extlight_master_accov, D(100), extlight_wingtail_brt, D(100),					// MASTER Switch - A-C covert; WING/TAIL Switch - BRT
+								 extlight_fuselage_off, D(), throttle_led4_on );								// FUSELAGE Switch - OFF; LED4 ON
 	extlight_formation  = 0;																					// 
-	extlight_covert		= CHAIN( DOWN+L_CTL, D(10), PULSE+'l', D(), UP+L_CTL, D(100), 							// MASTER Switch - ALL covert
-								 DOWN+R_SHIFT+L_CTL, D(10), PULSE+'l', D(), UP+R_SHIFT+L_CTL, D(100),			// WING/TAIL Switch - OFF
-								 DOWN+R_CTL+L_CTL, D(10), PULSE+'l', D(), UP+R_CTL+L_CTL, D(),					// FUSELAGE Switch - OFF
-								 LED(&Throttle, LED_ONOFF, LED_CURRENT-LED4) );									// LED4 OFF
-	extlight_flashsteady = CHAIN( DOWN+R_ALT, D(10), PULSE+'l', D(), UP+R_ALT );								// FLASH STEADY Switch - FLASH/STEADY
+	extlight_covert		= CHAIN( extlight_master_allcov, D(100), extlight_wingtail_off, D(100),					// MASTER Switch - ALL covert; WING/TAIL Switch - OFF
+								 extlight_fuselage_off, D(), throttle_led4_off );								// FUSELAGE Switch - OFF; LED4 OFF
 
 
 	// A-A override function
@@ -189,8 +205,7 @@ int main()
 
 
 	// Parking Brake 
-	parkingbrake 		= SEQ( CHAIN( DOWN+R_CTL, D(10), PULSE+'p', D(), UP+R_CTL ),							// ANTI-SKID Switch - PARKING BRAKE
-							   CHAIN( DOWN+R_CTL+R_SHIFT, D(10), PULSE+'p', D(), UP+R_CTL+R_SHIFT ));			// ANTI-SKID Switch - ANTI-SKID
+	parkingbrake_toggle = SEQ( brake_parking, brake_antiskid );													// ANTI-SKID Switch - PARKING BRAKE; ANTI-SKID Switch - ANTI-SKID
 
 
 
@@ -274,7 +289,7 @@ int main()
 							 	sidewinder_uncage );															// O - UNCAGE Switch
 	// CSL
 	MapKeyIO(&Throttle, CSL, 	icp_dobber_ret, 																// I - ICP Data Control Switch - RET (dobber return)
-							 	TEMPO( EXEC( "if(WHDN_mode) ActKey( PULSE+KEYON+parkingbrake );" 				// O - [WHDN] Toggle parking brake
+							 	TEMPO( EXEC( "if(WHDN_mode) ActKey( PULSE+KEYON+parkingbrake_toggle );" 		// O - [WHDN] Toggle parking brake
 											 "else ActKey (PULSE+KEYON+icp_priobutton_7);" ),					// 	   ICP Priority Function Button - 7 (MARK)
 									   icp_priobutton_0, 500 ));												//	   [long] ICP Priority Function Button - 0 (M-SEL)
 									   
