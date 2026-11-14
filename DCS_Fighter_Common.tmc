@@ -314,7 +314,7 @@ int dcs_fighter_common_configuration()
 	
 	SetShiftButton(&AVA_F16, S4, &Throttle, BSF, BSB, 0);
 
-	// ---------------------- Warthog LEDs --------------------------
+	// ------------------ Warthog throttle LEDs ---------------------
 
 	throttle_led1_on	= LED( &Throttle, LED_ONOFF, LED_CURRENT+LED1 );
 	throttle_led1_off	= LED( &Throttle, LED_ONOFF, LED_CURRENT-LED1 );
@@ -502,7 +502,7 @@ int dcs_fighter_common_functions()
 	hook_extend				= DX45;																						// HOOK Switch - DOWN
 	hook_retract			= DX46;																						// HOOK Switch - UP
 
-	// Systems
+	// Keybindings
 	mastercaution			= CHAIN( DOWN+L_ALT, D(10), DOWN+'m', D(300), UP+'m', D(10), UP+L_ALT );					// Master caution button
 	gear_up					= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'g', D(), UP+L_SHIFT ); 								// Gear up 
 	gear_down				= CHAIN( DOWN+L_CTL, D(10), PULSE+'g', D(), UP+L_CTL ); 									// Gear down

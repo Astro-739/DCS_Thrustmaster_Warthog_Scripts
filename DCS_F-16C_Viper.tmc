@@ -180,9 +180,9 @@ int main()
 
 
 	// Autopilot function
-	autopilot_ALThold 	= CHAIN( ap_pitch_althold, EXEC( "autopilot_mode = 1;" ));								// Autopilot PITCH Switch - ALT HOLD
-	autopilot_ATThold 	= CHAIN( ap_pitch_atthold, EXEC( "autopilot_mode = 1;" ));								// Autopilot PITCH Switch - ATT HOLD
-	autopilot_off 		= CHAIN( ap_pitch_apoff, EXEC( "autopilot_mode = 0;" ));								// Autopilot PITCH Switch - A/P OFF
+	autopilot_ALThold 	= CHAIN( ap_pitch_althold, D(), EXEC( "autopilot_mode = 1;" ));								// Autopilot PITCH Switch - ALT HOLD
+	autopilot_ATThold 	= CHAIN( ap_pitch_atthold, D(), EXEC( "autopilot_mode = 1;" ));								// Autopilot PITCH Switch - ATT HOLD
+	autopilot_off 		= CHAIN( ap_pitch_apoff, D(), EXEC( "autopilot_mode = 0;" ));								// Autopilot PITCH Switch - A/P OFF
 	
 	autopilot 			= EXEC( "if(!autopilot_mode) ActKey( PULSE+KEYON+autopilot_ALThold );"
 					  			"if(autopilot_mode) ActKey( PULSE+KEYON+autopilot_off );"	);

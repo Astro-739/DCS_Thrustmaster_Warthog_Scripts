@@ -50,12 +50,23 @@ int fcsstab_roll_toggle;
 int flaps_up;
 int flaps_down;
 int autothrottle;
+int ap_on;
+int ap_off;
 int	bombing_tool;
 int	checklist_tool;
 int	virt_browser;
 int	manual_toggle;
 int horns_left;
 int horns_right;
+int	extlight_master_on;
+int	extlight_master_off;
+int	extlight_poswing_brt;
+int	extlight_poswing_dim;
+int	extlight_poswing_off;
+int	extlight_postail_brt;
+int	extlight_postail_dim;
+int	extlight_postail_off;
+int	extlight_anticoll_off;
 
 int steercmdlist, index_stcmd = 0;							// (start with second element after increment, element 0 is first element in list)
 int radarrangelist, index_range = 2;						// (current is middle of five (assumption 100 nm), element 2, element 0 is first element in list)
@@ -162,11 +173,8 @@ int main()
 	dcs_fighter_common_functions();						// load dcs COMMON functions
 
 
-	// -------------------- AIRCRAFT FUNCTIONS ----------------------
 
-
-	// ------------------------- FUNCTIONS --------------------------
-
+	// ------------------- AIRCRAFT KEYBINDINGS ---------------------
 
 	// Keybindings
 	displaymode_takeoff	= CHAIN( DOWN+L_SHIFT, D(10), PULSE+'1', D(), UP+L_SHIFT );
@@ -204,15 +212,28 @@ int main()
 	manual_toggle		= CHAIN( DOWN+R_ALT, D(10), PULSE+'m', D(), UP+R_ALT );
 	horns_left			= CHAIN( DOWN+L_SHIFT+L_ALT, D(10), PULSE+'o', D(), UP+L_SHIFT+L_ALT );
 	horns_right			= CHAIN( DOWN+R_SHIFT+L_ALT, D(10), PULSE+'o', D(), UP+R_SHIFT+L_ALT );
+	ap_on				= CHAIN( DOWN+L_ALT+L_SHIFT, D(10), PULSE+'p', D(), UP+L_ALT+L_SHIFT );							// Autopilot on
+	ap_off				= CHAIN( DOWN+L_ALT+L_CTL, D(10), PULSE+'p', D(), UP+L_ALT+L_CTL );								// Autopilot off
+	extlight_master_on		= 0;
+	extlight_master_off		= 0;
+	extlight_poswing_brt	= 0;
+	extlight_poswing_dim	= 0;
+	extlight_poswing_off	= 0;
+	extlight_postail_brt	= 0;
+	extlight_postail_dim	= 0;
+	extlight_postail_off	= 0;
+	extlight_anticoll_off	= 0;
+
 
 	// DX bindings
 	hudtrim_incr		= DX13;																							// In Common this is bound to radar elevation
 	hudtrim_decr		= DX14;																							// In Common this is bound to radar elevation
 
+
+	// -------------------- AIRCRAFT FUNCTIONS ----------------------
+
 	// Autopilot
-	autopilot 	= SEQ( CHAIN( EXEC( "autopilot_mode();" ), D(200),														// Set autopilot mode
-							  DOWN+L_ALT+L_SHIFT, D(10), PULSE+'p', D(), UP+L_ALT+L_SHIFT ),							// Autopilot on
-					   CHAIN( DOWN+L_ALT+L_CTL, D(10), PULSE+'p', D(), UP+L_ALT+L_CTL ));								// Autopilot off
+	autopilot 	= SEQ( CHAIN( EXEC( "autopilot_mode();" ), D(200), ap_on ), ap_off );									// Set autopilot mode; Autopilot on; Autopilot off
 	
 
 	// Ground Crew Start-up
@@ -258,7 +279,7 @@ int main()
 
 
 
-	// JESTER calls
+	// ----------------------- JESTER CALLS -------------------------
 
 	// Radar - Radar Mode
 	JSTR_rdr_mode_auto		= CHAIN( PULSE+'a', D(200), PULSE+'a', D(200), 												// Main menu
@@ -387,20 +408,21 @@ int main()
 
 
 
-	// ----- JSTR functions ----------- define sequences here, are remembered when switching controls
-	JSTR_rdr_offon			= SEQ( JSTR_rdr_off,										// Radar - Silent/Active
+	// --------------------- JESTER FUNCTIONS -----------------------												define sequences here, are remembered when switching controls
+
+	JSTR_rdr_offon			= SEQ( JSTR_rdr_off,																	// Radar - Silent/Active
 								   JSTR_rdr_on );
-	JSTR_ground_ac_stbl		= SEQ( JSTR_rdr_ground_stab,								// Radar - Ground/Aircraft Stabilize
-								   JSTR_rdr_ac_stab );
-	JSTR_toggle_RWS_TWS		= SEQ( JSTR_rdr_mode_RWS,									// Radar - RWS/TWS Mode
+	JSTR_ground_ac_stbl		= SEQ( JSTR_rdr_ground_stab,															// Radar - Ground/Aircraft Stabilize
+								   JSTR_rdr_ac_stab );	
+	JSTR_toggle_RWS_TWS		= SEQ( JSTR_rdr_mode_RWS,																// Radar - RWS/TWS Mode
 								   JSTR_rdr_mode_TWS );
-	JSTR_rwr_ai_norm		= SEQ( JSTR_rwr_ai,											// RWR - Airborne Interceptor / Normal
+	JSTR_rwr_ai_norm		= SEQ( JSTR_rwr_ai,																		// RWR - Airborne Interceptor / Normal
 								   JSTR_rwr_norm );
-	JSTR_rwr_unknown_norm	= SEQ( JSTR_rwr_unknown,									// RWR - Unknown / Normal
+	JSTR_rwr_unknown_norm	= SEQ( JSTR_rwr_unknown,																// RWR - Unknown / Normal
 								   JSTR_rwr_norm );
-	JSTR_WHDN_startup		= SEQ( JSTR_startup,										// Start-up/Loud&Clear
+	JSTR_WHDN_startup		= SEQ( JSTR_startup,																	// Start-up/Loud&Clear
 								   JSTR_loudclear );
-	JSTR_nav_wp123			= SEQ( JSTR_nav_wp1,										// Nav - Set Steerpoint WP 1/2/3
+	JSTR_nav_wp123			= SEQ( JSTR_nav_wp1,																	// Nav - Set Steerpoint WP 1/2/3
 								   JSTR_nav_wp2,
 								   JSTR_nav_wp3 );
 
